@@ -5,6 +5,7 @@
   "start_url": "./",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
+  "orientation": "landscape",
   "background_color": "#eef3f4",
   "theme_color": "#0b5b68",
   "lang": "es",

@@ -8,6 +8,7 @@
     fullscreen: false,
     fullscreenFallback: false,
     summaryExpanded: false,
+    swipeStart: null,
     slides: [],
     slidesReady: false,
     slidesPromise: null,
@@ -21,6 +22,7 @@
 
   function init() {
     cacheElements();
+    syncViewportMetrics();
     hydrateStaticCopy();
     bindBaseEvents();
     prepareCover();
@@ -45,6 +47,7 @@
     els.summaryToggleButton = document.getElementById("summary-toggle-button");
     els.viewerLayout = document.getElementById("viewer-layout");
     els.viewerCard = document.getElementById("viewer-card");
+    els.slideMediaFrame = document.getElementById("slide-media-frame");
     els.slideImage = document.getElementById("slide-image");
     els.slidePlaceholder = document.getElementById("slide-placeholder");
     els.placeholderTitle = document.getElementById("placeholder-title");
@@ -102,10 +105,21 @@
       button.addEventListener("click", () => togglePanel(button.dataset.panel, button));
     });
 
+    if (els.slideMediaFrame) {
+      els.slideMediaFrame.addEventListener("touchstart", handleSwipeStart, { passive: true });
+      els.slideMediaFrame.addEventListener("touchend", handleSwipeEnd, { passive: true });
+      els.slideMediaFrame.addEventListener("touchcancel", resetSwipeState, { passive: true });
+    }
+
     document.addEventListener("keydown", handleGlobalKeydown);
     document.addEventListener("fullscreenchange", syncFullscreenState);
     document.addEventListener("webkitfullscreenchange", syncFullscreenState);
     window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("orientationchange", handleViewportChange);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleViewportChange);
+      window.visualViewport.addEventListener("scroll", handleViewportChange);
+    }
   }
 
   async function prepareCover() {
@@ -1480,10 +1494,12 @@
   }
 
   function syncFullscreenState() {
+    syncViewportMetrics();
     state.fullscreen = getFullscreenElement() === els.appShell || state.fullscreenFallback;
     if (els.appShell) {
       els.appShell.classList.toggle("is-fullscreen", state.fullscreen);
     }
+    syncMobileReadingMode();
     if (state.slides.length) {
       syncSummaryPresentation(Boolean(state.slides[state.currentIndex] && state.slides[state.currentIndex].summary));
     } else {
@@ -1538,6 +1554,8 @@
   }
 
   function handleViewportChange() {
+    syncViewportMetrics();
+    syncMobileReadingMode();
     if (state.summaryExpanded && !isMobileViewport()) {
       closeSummaryModal(true);
     }
@@ -1546,8 +1564,91 @@
     }
   }
 
+  function syncMobileReadingMode() {
+    if (!els.appShell) {
+      return;
+    }
+    els.appShell.classList.toggle("is-mobile-reading", state.fullscreen && isMobileViewport());
+  }
+
+  function handleSwipeStart(event) {
+    if (!shouldHandleSwipe(event)) {
+      state.swipeStart = null;
+      return;
+    }
+
+    const touch = event.touches && event.touches[0];
+    if (!touch) {
+      state.swipeStart = null;
+      return;
+    }
+
+    state.swipeStart = {
+      x: touch.clientX,
+      y: touch.clientY
+    };
+  }
+
+  function handleSwipeEnd(event) {
+    if (!state.swipeStart || !shouldHandleSwipe(event)) {
+      state.swipeStart = null;
+      return;
+    }
+
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) {
+      state.swipeStart = null;
+      return;
+    }
+
+    const deltaX = touch.clientX - state.swipeStart.x;
+    const deltaY = touch.clientY - state.swipeStart.y;
+    const horizontalDistance = Math.abs(deltaX);
+    const verticalDistance = Math.abs(deltaY);
+
+    state.swipeStart = null;
+
+    if (horizontalDistance < 52 || horizontalDistance <= verticalDistance * 1.25) {
+      return;
+    }
+
+    changeSlide(deltaX < 0 ? 1 : -1);
+  }
+
+  function resetSwipeState() {
+    state.swipeStart = null;
+  }
+
+  function shouldHandleSwipe(event) {
+    if (!isMobileViewport() || !state.entered || !state.slides.length || state.activePanel || state.summaryExpanded) {
+      return false;
+    }
+
+    if (!event || !event.touches && !event.changedTouches) {
+      return false;
+    }
+
+    const touchList = event.touches && event.touches.length ? event.touches : event.changedTouches;
+    return Boolean(touchList && touchList.length === 1);
+  }
+
+  function syncViewportMetrics() {
+    const root = document.documentElement;
+    const viewport = window.visualViewport;
+    const height = viewport ? viewport.height : window.innerHeight;
+    const width = viewport ? viewport.width : window.innerWidth;
+
+    if (Number.isFinite(height) && height > 0) {
+      root.style.setProperty("--viewport-height", `${Math.round(height)}px`);
+    }
+
+    if (Number.isFinite(width) && width > 0) {
+      root.style.setProperty("--viewport-width", `${Math.round(width)}px`);
+    }
+  }
+
   function isMobileViewport() {
-    return window.matchMedia("(max-width: 640px)").matches;
+    return window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse) and (max-height: 500px)").matches;
   }
 
   function formatTextAsParagraphs(text) {
