@@ -1404,8 +1404,7 @@
     if (!label) {
       return "";
     }
-    const normalized = String(label).normalize("NFD");
-    return encodeURI(`docs/${normalized}`);
+    return encodeURI(`docs/${String(label)}`);
   }
 
   function registerServiceWorker() {
