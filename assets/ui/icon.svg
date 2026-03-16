@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>NAC</title>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b5b68" />
+      <stop offset="100%" stop-color="#2a8796" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#eef4f5" />
+  <path d="M128 42c-23 0-41 18-41 41v27c-11 7-18 20-18 34 0 18 12 34 29 39v17c0 8 7 14 14 14h6v-62H94c-10 0-18-8-18-18s8-18 18-18h24V83c0-6 4-10 10-10s10 4 10 10v34h24c10 0 18 8 18 18s-8 18-18 18h-24v62h6c8 0 14-6 14-14v-17c17-5 29-21 29-39 0-14-7-27-18-34V83c0-23-18-41-41-41Z" fill="url(#g)" />
+  <circle cx="128" cy="128" r="14" fill="#ffffff" />
+</svg>

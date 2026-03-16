@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b5b68">
+    <meta name="description" content="Sesión clínica sobre Neumonía Adquirida en la Comunidad (NAC) en adultos.">
+    <title>Neumonía Adquirida en la Comunidad (NAC)</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/ui/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="data/content.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <section class="screen screen-cover is-active" id="cover-screen" aria-labelledby="cover-title">
+        <div class="cover-card">
+          <h1 class="visually-hidden" id="cover-title"></h1>
+          <p class="cover-author" id="cover-author" hidden></p>
+          <figure class="cover-visual">
+            <img id="cover-image" alt="Portada de la sesión NAC" loading="eager">
+            <figcaption id="cover-caption" hidden></figcaption>
+          </figure>
+          <button class="button button-primary cover-enter" id="enter-button" type="button">Entrar</button>
+        </div>
+      </section>
+
+      <section class="screen screen-app" id="app-screen" hidden aria-labelledby="app-title">
+        <header class="app-header">
+          <div>
+            <h1 class="app-title" id="app-title"></h1>
+          </div>
+          <div class="header-badges">
+            <button class="subtle-button" id="back-to-cover-button" type="button">Portada</button>
+            <span class="status-chip status-chip-muted" id="slide-counter">0 / 0</span>
+          </div>
+        </header>
+
+        <nav class="panel-rail" aria-label="Paneles laterales">
+          <button class="rail-button" data-panel="dx" type="button">Dx</button>
+          <button class="rail-button" data-panel="tx" type="button">Tx</button>
+          <button class="rail-button" data-panel="scales" type="button">Escalas</button>
+          <button class="rail-button" data-panel="session" type="button">Sesión</button>
+        </nav>
+
+        <div class="viewer-layout" id="viewer-layout">
+          <section class="viewer-card" id="viewer-card" aria-live="polite">
+            <header class="viewer-meta">
+              <div class="viewer-heading-group">
+                <p class="viewer-kicker" id="slide-kicker">Buscando diapositivas locales</p>
+                <h2 class="viewer-heading" id="slide-heading">Preparando sesión</h2>
+              </div>
+              <button class="summary-toggle" id="summary-toggle-button" type="button" aria-controls="slide-summary" aria-expanded="false" hidden>
+                Ver resumen
+              </button>
+            </header>
+
+            <div class="viewer-media-frame" id="slide-media-frame">
+              <img id="slide-image" alt="" loading="lazy" hidden>
+              <div class="slide-placeholder" id="slide-placeholder">
+                <div class="placeholder-inner">
+                  <h3 id="placeholder-title">Diapositiva no disponible</h3>
+                  <p id="placeholder-copy" hidden></p>
+                </div>
+              </div>
+            </div>
+
+            <article class="viewer-summary" id="slide-summary" hidden></article>
+          </section>
+
+          <div class="viewer-controls" aria-label="Navegación de diapositivas">
+            <button class="button" id="previous-button" type="button">Anterior</button>
+            <p class="viewer-position" id="viewer-position">Sin diapositivas</p>
+            <button class="button" id="next-button" type="button">Siguiente</button>
+            <button class="button" id="fullscreen-button" type="button">Pantalla completa</button>
+          </div>
+        </div>
+
+        <footer class="app-footer">
+          <p class="footer-signature">Guillermo J. Olivero Sanjuanelo</p>
+        </footer>
+      </section>
+
+      <div class="overlay" id="overlay" hidden></div>
+
+      <aside class="side-panel" id="side-panel" hidden aria-hidden="true" aria-labelledby="panel-title" role="dialog">
+        <div class="side-panel-shell">
+          <header class="side-panel-header">
+            <div>
+              <p class="eyebrow" id="panel-kicker">Panel</p>
+              <h2 id="panel-title">Contenido</h2>
+            </div>
+            <button class="icon-button" id="close-panel-button" type="button" aria-label="Cerrar panel">X</button>
+          </header>
+          <div class="side-panel-body" id="panel-body"></div>
+        </div>
+      </aside>
+    </div>
+  </body>
+</html>
