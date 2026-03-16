@@ -1,9 +1,11 @@
 {
   "name": "Neumonía Adquirida en la Comunidad (NAC)",
   "short_name": "NAC",
+  "id": "./",
+  "scope": "./",
   "description": "App docente offline independiente sobre Neumonía Adquirida en la Comunidad (NAC) en adultos.",
   "start_url": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
   "orientation": "landscape",
   "background_color": "#eef3f4",
@@ -15,6 +17,12 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "assets/ui/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

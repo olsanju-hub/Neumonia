@@ -7,6 +7,7 @@
     currentIndex: 0,
     fullscreen: false,
     fullscreenFallback: false,
+    standaloneReadingDismissed: false,
     summaryExpanded: false,
     swipeStart: null,
     slides: [],
@@ -140,6 +141,7 @@
 
     await ensureSlides();
     renderCurrentSlide();
+    syncFullscreenState();
   }
 
   function returnToCover() {
@@ -147,9 +149,11 @@
     closeSummaryModal();
     exitAppFullscreen();
     state.entered = false;
+    state.standaloneReadingDismissed = false;
     state.summaryExpanded = false;
     els.appScreen.hidden = true;
     els.coverScreen.hidden = false;
+    syncFullscreenState();
     if (els.enterButton) {
       els.enterButton.focus();
     }
@@ -1474,6 +1478,12 @@
       return;
     }
 
+    if (isStandaloneMobileApp()) {
+      state.standaloneReadingDismissed = !state.standaloneReadingDismissed;
+      syncFullscreenState();
+      return;
+    }
+
     if (state.fullscreen) {
       exitAppFullscreen();
       return;
@@ -1495,9 +1505,13 @@
 
   function syncFullscreenState() {
     syncViewportMetrics();
-    state.fullscreen = getFullscreenElement() === els.appShell || state.fullscreenFallback;
+    state.fullscreen =
+      getFullscreenElement() === els.appShell ||
+      state.fullscreenFallback ||
+      shouldUseStandaloneReadingMode();
     if (els.appShell) {
       els.appShell.classList.toggle("is-fullscreen", state.fullscreen);
+      els.appShell.classList.toggle("is-standalone-app", isStandaloneAppDisplay());
     }
     syncMobileReadingMode();
     if (state.slides.length) {
@@ -1510,6 +1524,10 @@
 
   function syncFullscreenButton() {
     if (!els.fullscreenButton) {
+      return;
+    }
+    if (isStandaloneMobileApp()) {
+      els.fullscreenButton.textContent = state.standaloneReadingDismissed ? "Modo lectura" : "Mostrar interfaz";
       return;
     }
     els.fullscreenButton.textContent = state.fullscreen ? "Salir de pantalla completa" : "Pantalla completa";
@@ -1568,7 +1586,7 @@
     if (!els.appShell) {
       return;
     }
-    els.appShell.classList.toggle("is-mobile-reading", state.fullscreen && isMobileViewport());
+    els.appShell.classList.toggle("is-mobile-reading", shouldUseMobileReadingMode());
   }
 
   function handleSwipeStart(event) {
@@ -1649,6 +1667,25 @@
 
   function isMobileViewport() {
     return window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse) and (max-height: 500px)").matches;
+  }
+
+  function shouldUseMobileReadingMode() {
+    return state.entered && isMobileViewport() && (state.fullscreen || shouldUseStandaloneReadingMode());
+  }
+
+  function shouldUseStandaloneReadingMode() {
+    return state.entered && isStandaloneMobileApp() && !state.standaloneReadingDismissed;
+  }
+
+  function isStandaloneMobileApp() {
+    return isMobileViewport() && isStandaloneAppDisplay();
+  }
+
+  function isStandaloneAppDisplay() {
+    const standaloneMatch =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches;
+    return standaloneMatch || window.navigator.standalone === true;
   }
 
   function formatTextAsParagraphs(text) {

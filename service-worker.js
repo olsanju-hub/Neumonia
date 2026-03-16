@@ -1,4 +1,4 @@
-const CACHE_NAME = "nac-shell-v7";
+const CACHE_NAME = "nac-shell-v8";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const SHELL_ASSETS = [
   "./data/content.js",
   "./manifest.webmanifest",
   "./assets/ui/icon.svg",
+  "./assets/ui/apple-touch-icon.png",
   "./assets/ui/cover-placeholder.svg",
   "./assets/ui/slide-placeholder.svg"
 ];
