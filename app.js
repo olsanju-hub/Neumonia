@@ -6,6 +6,7 @@
     activePanel: null,
     currentIndex: 0,
     fullscreen: false,
+    fullscreenFallback: false,
     summaryExpanded: false,
     slides: [],
     slidesReady: false,
@@ -117,9 +118,7 @@
 
   function returnToCover() {
     closePanel();
-    if (getFullscreenElement()) {
-      exitFullscreen();
-    }
+    exitAppFullscreen();
     state.entered = false;
     state.summaryExpanded = false;
     els.appScreen.hidden = true;
@@ -477,6 +476,11 @@
 
     if (event.key === "Escape" && state.activePanel) {
       closePanel();
+      return;
+    }
+
+    if (event.key === "Escape" && state.fullscreen) {
+      exitAppFullscreen();
       return;
     }
 
@@ -1359,16 +1363,27 @@
       return;
     }
 
-    if (getFullscreenElement()) {
-      exitFullscreen();
+    if (state.fullscreen) {
+      exitAppFullscreen();
       return;
     }
 
-    requestFullscreen(els.appShell);
+    const requested = requestFullscreen(els.appShell);
+
+    if (!requested) {
+      enterFallbackFullscreen();
+      return;
+    }
+
+    if (typeof requested.then === "function") {
+      requested.catch(() => {
+        enterFallbackFullscreen();
+      });
+    }
   }
 
   function syncFullscreenState() {
-    state.fullscreen = getFullscreenElement() === els.appShell;
+    state.fullscreen = getFullscreenElement() === els.appShell || state.fullscreenFallback;
     if (els.appShell) {
       els.appShell.classList.toggle("is-fullscreen", state.fullscreen);
     }
@@ -1389,12 +1404,26 @@
 
   function requestFullscreen(element) {
     if (element.requestFullscreen) {
-      element.requestFullscreen();
-      return;
+      return element.requestFullscreen();
     }
     if (element.webkitRequestFullscreen) {
-      element.webkitRequestFullscreen();
+      return element.webkitRequestFullscreen();
     }
+    return null;
+  }
+
+  function exitAppFullscreen() {
+    if (state.fullscreenFallback) {
+      state.fullscreenFallback = false;
+      syncFullscreenState();
+      return;
+    }
+    exitFullscreen();
+  }
+
+  function enterFallbackFullscreen() {
+    state.fullscreenFallback = true;
+    syncFullscreenState();
   }
 
   function exitFullscreen() {
