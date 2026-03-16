@@ -55,6 +55,11 @@
     els.nextButton = document.getElementById("next-button");
     els.fullscreenButton = document.getElementById("fullscreen-button");
     els.overlay = document.getElementById("overlay");
+    els.summaryBackdrop = document.getElementById("summary-backdrop");
+    els.summaryModal = document.getElementById("summary-modal");
+    els.summaryModalTitle = document.getElementById("summary-modal-title");
+    els.summaryModalBody = document.getElementById("summary-modal-body");
+    els.closeSummaryButton = document.getElementById("close-summary-button");
     els.sidePanel = document.getElementById("side-panel");
     els.panelKicker = document.getElementById("panel-kicker");
     els.panelTitle = document.getElementById("panel-title");
@@ -85,6 +90,12 @@
       els.summaryToggleButton.addEventListener("click", toggleSummary);
     }
     els.overlay.addEventListener("click", closePanel);
+    if (els.summaryBackdrop) {
+      els.summaryBackdrop.addEventListener("click", closeSummaryModal);
+    }
+    if (els.closeSummaryButton) {
+      els.closeSummaryButton.addEventListener("click", closeSummaryModal);
+    }
     els.closePanelButton.addEventListener("click", closePanel);
 
     els.panelButtons.forEach((button) => {
@@ -94,6 +105,7 @@
     document.addEventListener("keydown", handleGlobalKeydown);
     document.addEventListener("fullscreenchange", syncFullscreenState);
     document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+    window.addEventListener("resize", handleViewportChange);
   }
 
   async function prepareCover() {
@@ -118,6 +130,7 @@
 
   function returnToCover() {
     closePanel();
+    closeSummaryModal();
     exitAppFullscreen();
     state.entered = false;
     state.summaryExpanded = false;
@@ -281,6 +294,7 @@
 
     const slide = state.slides[state.currentIndex];
     state.summaryExpanded = false;
+    closeSummaryModal(true);
     els.slideKicker.hidden = true;
     els.slideKicker.textContent = "";
     els.slideHeading.textContent = slide.title;
@@ -314,6 +328,7 @@
 
   function renderLoadingState(title) {
     state.summaryExpanded = false;
+    closeSummaryModal(true);
     els.slideKicker.hidden = true;
     els.slideKicker.textContent = "";
     els.slideHeading.textContent = title;
@@ -331,6 +346,7 @@
 
   function renderEmptyState() {
     state.summaryExpanded = false;
+    closeSummaryModal(true);
     els.slideKicker.hidden = true;
     els.slideKicker.textContent = "";
     els.slideHeading.textContent = "Sin diapositivas disponibles";
@@ -366,8 +382,14 @@
     if (!slide || !slide.summary) {
       return;
     }
-    state.summaryExpanded = !state.summaryExpanded;
-    syncSummaryPresentation(true);
+    if (isMobileViewport()) {
+      if (state.summaryExpanded) {
+        closeSummaryModal();
+      } else {
+        openSummaryModal(slide);
+      }
+      return;
+    }
   }
 
   function updateSlideCounter() {
@@ -390,17 +412,85 @@
       return;
     }
 
+    const mobileMode = isMobileViewport();
     const showSummary = Boolean(hasSummary) && !state.fullscreen;
-    els.viewerCard.classList.toggle("has-summary", showSummary);
-    els.viewerCard.classList.toggle("summary-open", showSummary && state.summaryExpanded);
-    els.viewerCard.classList.toggle("summary-collapsed", showSummary && !state.summaryExpanded);
-    els.slideSummary.hidden = !showSummary;
+    const inlineSummary = showSummary && !mobileMode;
+    els.viewerCard.classList.toggle("has-summary", inlineSummary);
+    els.viewerCard.classList.toggle("summary-open", false);
+    els.viewerCard.classList.toggle("summary-collapsed", false);
+    els.slideSummary.hidden = !inlineSummary;
 
     if (els.summaryToggleButton) {
       els.summaryToggleButton.hidden = !showSummary;
       els.summaryToggleButton.setAttribute("aria-expanded", showSummary && state.summaryExpanded ? "true" : "false");
-      els.summaryToggleButton.textContent = state.summaryExpanded ? "Ocultar resumen" : "Ver resumen";
+      els.summaryToggleButton.textContent = state.summaryExpanded ? "Cerrar resumen" : "Resumen";
     }
+
+    if (!showSummary || !mobileMode) {
+      closeSummaryModal(true);
+    }
+  }
+
+  function openSummaryModal(slide) {
+    if (!slide || !slide.summary || !els.summaryModal || !els.summaryBackdrop) {
+      return;
+    }
+
+    state.summaryExpanded = true;
+    if (els.summaryModalTitle) {
+      els.summaryModalTitle.textContent = slide.title;
+    }
+    if (els.summaryModalBody) {
+      els.summaryModalBody.innerHTML = formatTextAsParagraphs(slide.summary);
+    }
+    els.summaryModal.hidden = false;
+    els.summaryBackdrop.hidden = false;
+    requestAnimationFrame(() => {
+      els.summaryModal.classList.add("is-open");
+      els.summaryBackdrop.classList.add("is-open");
+    });
+    els.summaryModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("panel-open");
+    if (els.summaryToggleButton) {
+      els.summaryToggleButton.setAttribute("aria-expanded", "true");
+      els.summaryToggleButton.textContent = "Cerrar resumen";
+    }
+    if (els.closeSummaryButton) {
+      els.closeSummaryButton.focus();
+    }
+  }
+
+  function closeSummaryModal(silent) {
+    if (!els.summaryModal || !els.summaryBackdrop) {
+      state.summaryExpanded = false;
+      return;
+    }
+
+    state.summaryExpanded = false;
+    els.summaryModal.classList.remove("is-open");
+    els.summaryBackdrop.classList.remove("is-open");
+    els.summaryModal.setAttribute("aria-hidden", "true");
+
+    if (els.summaryToggleButton) {
+      els.summaryToggleButton.setAttribute("aria-expanded", "false");
+      if (!els.summaryToggleButton.hidden) {
+        els.summaryToggleButton.textContent = "Resumen";
+      }
+    }
+
+    setTimeout(() => {
+      if (state.summaryExpanded) {
+        return;
+      }
+      els.summaryModal.hidden = true;
+      els.summaryBackdrop.hidden = true;
+      if (!state.activePanel) {
+        document.body.classList.remove("panel-open");
+      }
+      if (!silent && els.summaryToggleButton && !els.summaryToggleButton.hidden) {
+        els.summaryToggleButton.focus();
+      }
+    }, 220);
   }
 
   function togglePanel(panelKey, button) {
@@ -417,6 +507,7 @@
   }
 
   function openPanel(panelKey, button) {
+    closeSummaryModal(true);
     state.activePanel = panelKey;
     state.returnFocusEl = button || document.activeElement;
 
@@ -459,7 +550,9 @@
       }
       els.sidePanel.hidden = true;
       els.overlay.hidden = true;
-      document.body.classList.remove("panel-open");
+      if (!state.summaryExpanded) {
+        document.body.classList.remove("panel-open");
+      }
       if (state.returnFocusEl && typeof state.returnFocusEl.focus === "function") {
         state.returnFocusEl.focus();
       }
@@ -476,6 +569,11 @@
 
     if (event.key === "Escape" && state.activePanel) {
       closePanel();
+      return;
+    }
+
+    if (event.key === "Escape" && state.summaryExpanded) {
+      closeSummaryModal();
       return;
     }
 
@@ -1438,6 +1536,19 @@
 
   function getFullscreenElement() {
     return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function handleViewportChange() {
+    if (state.summaryExpanded && !isMobileViewport()) {
+      closeSummaryModal(true);
+    }
+    if (state.slides.length) {
+      syncSummaryPresentation(Boolean(state.slides[state.currentIndex] && state.slides[state.currentIndex].summary));
+    }
+  }
+
+  function isMobileViewport() {
+    return window.matchMedia("(max-width: 640px)").matches;
   }
 
   function formatTextAsParagraphs(text) {

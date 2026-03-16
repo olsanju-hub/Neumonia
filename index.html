@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0b5b68">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NAC">
     <meta name="description" content="Sesión clínica sobre Neumonía Adquirida en la Comunidad (NAC) en adultos.">
     <title>Neumonía Adquirida en la Comunidad (NAC)</title>
     <link rel="manifest" href="manifest.webmanifest">
@@ -70,10 +74,10 @@
           </section>
 
           <div class="viewer-controls" aria-label="Navegación de diapositivas">
-            <button class="button" id="previous-button" type="button">Anterior</button>
+            <button class="button" id="previous-button" type="button" aria-label="Anterior">Anterior</button>
             <p class="viewer-position" id="viewer-position">Sin diapositivas</p>
-            <button class="button" id="next-button" type="button">Siguiente</button>
-            <button class="button" id="fullscreen-button" type="button">Pantalla completa</button>
+            <button class="button" id="next-button" type="button" aria-label="Siguiente">Siguiente</button>
+            <button class="button" id="fullscreen-button" type="button" aria-label="Pantalla completa">Pantalla completa</button>
           </div>
         </div>
 
@@ -83,6 +87,21 @@
       </section>
 
       <div class="overlay" id="overlay" hidden></div>
+
+      <div class="summary-backdrop" id="summary-backdrop" hidden></div>
+
+      <aside class="summary-modal" id="summary-modal" hidden aria-hidden="true" aria-labelledby="summary-modal-title" role="dialog">
+        <div class="summary-modal-shell">
+          <header class="summary-modal-header">
+            <div>
+              <p class="eyebrow">Resumen</p>
+              <h2 id="summary-modal-title">Resumen</h2>
+            </div>
+            <button class="icon-button" id="close-summary-button" type="button" aria-label="Cerrar resumen">X</button>
+          </header>
+          <div class="summary-modal-body" id="summary-modal-body"></div>
+        </div>
+      </aside>
 
       <aside class="side-panel" id="side-panel" hidden aria-hidden="true" aria-labelledby="panel-title" role="dialog">
         <div class="side-panel-shell">
