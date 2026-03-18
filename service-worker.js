@@ -1,4 +1,23 @@
-const CACHE_NAME = "nac-shell-v8";
+const CACHE_NAME = "nac-shell-v9";
+const SLIDE_CODES = [
+  "001",
+  "002",
+  "003",
+  "004",
+  "005",
+  "006",
+  "007",
+  "008",
+  "009",
+  "010",
+  "011",
+  "012",
+  "013",
+  "014",
+  "015",
+  "016"
+];
+
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -6,15 +25,21 @@ const SHELL_ASSETS = [
   "./app.js",
   "./data/content.js",
   "./manifest.webmanifest",
+  "./assets/portada/cover.png",
   "./assets/ui/icon.svg",
   "./assets/ui/apple-touch-icon.png",
   "./assets/ui/cover-placeholder.svg",
   "./assets/ui/slide-placeholder.svg"
 ];
+const CONTENT_ASSETS = SLIDE_CODES.flatMap((code) => [
+  `./assets/imagen/nac/${code}.png`,
+  `./assets/texto/nac/${code}.txt`
+]);
+const PRECACHE_ASSETS = SHELL_ASSETS.concat(CONTENT_ASSETS);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).then(() => self.skipWaiting())
   );
 });
 

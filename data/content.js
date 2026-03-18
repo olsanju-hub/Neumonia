@@ -1,3 +1,35 @@
+const SLIDE_CODES = Object.freeze([
+  "001",
+  "002",
+  "003",
+  "004",
+  "005",
+  "006",
+  "007",
+  "008",
+  "009",
+  "010",
+  "011",
+  "012",
+  "013",
+  "014",
+  "015",
+  "016"
+]);
+
+const SLIDES = Object.freeze(
+  SLIDE_CODES.map((code, index) =>
+    Object.freeze({
+      number: index + 1,
+      code,
+      imagePath: `assets/imagen/nac/${code}.png`,
+      textPath: `assets/texto/nac/${code}.txt`,
+      imageExists: true,
+      textExists: true
+    })
+  )
+);
+
 window.NAC_DATA = Object.freeze({
   appName: "Neumonía Adquirida en la Comunidad (NAC)",
   author: "Guillermo J. Olivero Sanjuanelo",
@@ -6,6 +38,7 @@ window.NAC_DATA = Object.freeze({
     coverPlaceholder: "assets/ui/cover-placeholder.svg",
     slidePlaceholder: "assets/ui/slide-placeholder.svg"
   }),
+  slides: SLIDES,
   slideScan: Object.freeze({
     maxIndex: 180,
     stopAfterMisses: 8

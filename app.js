@@ -186,6 +186,10 @@
   }
 
   async function discoverSlides() {
+    if (Array.isArray(APP.slides) && APP.slides.length) {
+      return discoverSlidesFromManifest(APP.slides);
+    }
+
     const slides = [];
     let misses = 0;
     let foundAny = false;
@@ -224,6 +228,42 @@
       } else {
         misses += 1;
       }
+    }
+
+    return slides;
+  }
+
+  async function discoverSlidesFromManifest(entries) {
+    const slides = [];
+
+    for (let index = 0; index < entries.length; index += 1) {
+      const entry = entries[index] || {};
+      const code = String(entry.code || "").padStart(3, "0");
+      if (!code) {
+        continue;
+      }
+
+      const imagePath = entry.imagePath || `assets/imagen/nac/${code}.png`;
+      const textPath = entry.textPath || `assets/texto/nac/${code}.txt`;
+      const imageExists = entry.imageExists !== false;
+      const text = entry.textExists === false ? null : await loadOptionalText(textPath);
+      const parsedText = parseSlideText(code, text, slides.length);
+      const number = Number.isFinite(Number(entry.number)) ? Number(entry.number) : index + 1;
+
+      if (!imageExists && !text) {
+        continue;
+      }
+
+      slides.push({
+        number,
+        code,
+        imagePath,
+        imageExists,
+        textPath,
+        textExists: Boolean(text),
+        title: parsedText.title,
+        summary: parsedText.summary
+      });
     }
 
     return slides;
@@ -400,7 +440,7 @@
     if (!slide || !slide.summary) {
       return;
     }
-    if (isMobileViewport()) {
+    if (shouldUseSummaryModal()) {
       if (state.summaryExpanded) {
         closeSummaryModal();
       } else {
@@ -430,21 +470,22 @@
       return;
     }
 
-    const mobileMode = isMobileViewport();
+    const modalSummary = shouldUseSummaryModal();
     const showSummary = Boolean(hasSummary) && !state.fullscreen;
-    const inlineSummary = showSummary && !mobileMode;
+    const inlineSummary = showSummary && !modalSummary;
     els.viewerCard.classList.toggle("has-summary", inlineSummary);
     els.viewerCard.classList.toggle("summary-open", false);
     els.viewerCard.classList.toggle("summary-collapsed", false);
     els.slideSummary.hidden = !inlineSummary;
 
     if (els.summaryToggleButton) {
-      els.summaryToggleButton.hidden = !showSummary;
-      els.summaryToggleButton.setAttribute("aria-expanded", showSummary && state.summaryExpanded ? "true" : "false");
+      const showSummaryToggle = showSummary && modalSummary;
+      els.summaryToggleButton.hidden = !showSummaryToggle;
+      els.summaryToggleButton.setAttribute("aria-expanded", showSummaryToggle && state.summaryExpanded ? "true" : "false");
       els.summaryToggleButton.textContent = state.summaryExpanded ? "Cerrar resumen" : "Resumen";
     }
 
-    if (!showSummary || !mobileMode) {
+    if (!showSummary || !modalSummary) {
       closeSummaryModal(true);
     }
   }
@@ -1574,7 +1615,7 @@
   function handleViewportChange() {
     syncViewportMetrics();
     syncMobileReadingMode();
-    if (state.summaryExpanded && !isMobileViewport()) {
+    if (state.summaryExpanded && !shouldUseSummaryModal()) {
       closeSummaryModal(true);
     }
     if (state.slides.length) {
@@ -1667,6 +1708,10 @@
 
   function isMobileViewport() {
     return window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse) and (max-height: 500px)").matches;
+  }
+
+  function shouldUseSummaryModal() {
+    return window.matchMedia("(max-width: 1024px)").matches;
   }
 
   function shouldUseMobileReadingMode() {
