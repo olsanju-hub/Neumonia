@@ -135,11 +135,11 @@ window.NAC_DATA = Object.freeze({
         Object.freeze({
           title: "Radiología",
           bullets: Object.freeze([
-            "Toda sospecha clínica razonable debe llevar a radiografía de tórax.",
+            "Para la mayoría de pacientes con sospecha de NAC se recomienda radiografía de tórax; en pacientes ambulatorios de bajo riesgo puede diferirse si no hay dudas diagnósticas ni mala evolución.",
             "Si la radiografía inicial es negativa pero la sospecha persiste, HUSE recomienda repetirla a las 24-48 horas y UpToDate plantea TC en casos seleccionados.",
             "La ecografía pulmonar es útil cuando la radiografía es difícil o de mala calidad, especialmente en pacientes inestables y con experiencia disponible."
           ]),
-          citations: Object.freeze(["Neumonía HUSE.pdf", "Neumonia NICE.pdf", "Evaluación clínica y pruebas de diagnóstico para la neumonía adquirida en la comunidad en adultos - UpToDate.pdf"])
+          citations: Object.freeze(["Neumonía HUSE.pdf", "Neumonia NICE.pdf", "Neumonia Fisterra 2021.pdf", "Evaluación clínica y pruebas de diagnóstico para la neumonía adquirida en la comunidad en adultos - UpToDate.pdf"])
         }),
         Object.freeze({
           title: "Microbiología si aplica",
@@ -247,9 +247,10 @@ window.NAC_DATA = Object.freeze({
           bullets: Object.freeze([
             "Abandono del hábito tabáquico.",
             "Vacunación antineumocócica en adultos con edad o riesgo que lo justifique.",
-            "Vacunación antigripal anual, especialmente en mayores de 65 años, comorbilidad, inmunosupresión, embarazo, institucionalización o personal sanitario."
+            "Vacunación antigripal anual, especialmente en mayores de 65 años, comorbilidad, inmunosupresión, embarazo, institucionalización o personal sanitario.",
+            "Revisar además otras vacunas de rutina indicadas por edad o riesgo según calendario y protocolo local."
           ]),
-          citations: Object.freeze(["Neumonía HUSE.pdf"])
+          citations: Object.freeze(["Neumonía HUSE.pdf", "Tratamiento de la neumonía adquirida en la comunidad en adultos en el entorno ambulatorio - UpToDate.pdf"])
         }),
         Object.freeze({
           title: "Qué falta",

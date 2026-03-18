@@ -1463,7 +1463,7 @@
     if (!label) {
       return "";
     }
-    return encodeURI(`docs/${String(label)}`);
+    return encodeURI(`docs/${String(label).normalize("NFD")}`);
   }
 
   function registerServiceWorker() {
@@ -1727,10 +1727,11 @@
   }
 
   function isStandaloneAppDisplay() {
-    const standaloneMatch =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      window.matchMedia("(display-mode: fullscreen)").matches;
-    return standaloneMatch || window.navigator.standalone === true;
+    const standaloneMatch = window.matchMedia("(display-mode: standalone)").matches;
+    const installedFullscreenMatch =
+      window.matchMedia("(display-mode: fullscreen)").matches &&
+      !getFullscreenElement();
+    return standaloneMatch || installedFullscreenMatch || window.navigator.standalone === true;
   }
 
   function formatTextAsParagraphs(text) {

@@ -22,10 +22,10 @@ El proyecto está hecho en HTML, CSS y JavaScript vanilla.
 
 1. Se abre la portada.
 2. Al pulsar `Entrar` se muestra la primera diapositiva disponible.
-3. Las diapositivas se cargan automáticamente desde `assets/imagen/nac/` y `assets/texto/nac/`.
+3. Las diapositivas se resuelven desde el inventario `slides` de `data/content.js` y cargan sus assets desde `assets/imagen/nac/` y `assets/texto/nac/`.
 4. Los paneles `Dx`, `Tx`, `Escalas` y `Sesión` se abren por encima de la presentación sin cambiar la diapositiva actual.
 5. En escritorio el resumen de la diapositiva aparece en una columna lateral.
-6. En móvil el resumen se abre como ventana superpuesta.
+6. En móvil y tablet compacta el resumen se abre como ventana superpuesta.
 7. En móvil, al pulsar `FS`, la app entra en modo lectura limpio y permite avanzar por `swipe` izquierda/derecha.
 
 ## Estructura del proyecto
@@ -70,7 +70,7 @@ El proyecto está hecho en HTML, CSS y JavaScript vanilla.
 - `app.js`: lógica completa de navegación, carga de diapositivas, paneles, escalas, fullscreen, `swipe` y PWA.
 - `data/content.js`: configuración docente de la sesión, títulos fijos, paneles, bibliografía y escalas.
 - `manifest.webmanifest`: configuración PWA.
-- `service-worker.js`: cache de shell y assets base.
+- `service-worker.js`: cache de shell, portada, diapositivas y resúmenes.
 
 ## Archivos que puedes cambiar sin tocar la lógica
 
@@ -81,7 +81,7 @@ El proyecto está hecho en HTML, CSS y JavaScript vanilla.
 
 ## Convención de diapositivas
 
-La app busca diapositivas numeradas en este formato:
+La app trabaja con un inventario explícito de diapositivas en `data/content.js` y resuelve los archivos numerados en este formato:
 
 - `assets/imagen/nac/001.png`
 - `assets/imagen/nac/002.png`
@@ -97,10 +97,10 @@ Texto opcional asociado:
 
 Reglas:
 
-- si existe `NNN.png`, la diapositiva se muestra
+- si `slides` apunta a `NNN.png`, la diapositiva se intenta mostrar
 - si falta `NNN.txt`, la diapositiva sigue funcionando sin resumen
 - si existe `NNN.txt` pero falta `NNN.png`, la diapositiva sigue en la secuencia y se mostrará como no disponible; no es el comportamiento recomendado
-- la detección automática de diapositivas está controlada por `slideScan` en `data/content.js`
+- `slideScan` queda como mecanismo de respaldo; el flujo normal usa `slides` para evitar 404 y mejorar el precache offline
 
 ## Cómo debe ir el `.txt`
 
@@ -158,7 +158,7 @@ En escritorio:
 - aparece junto a la diapositiva en una columna lateral
 - tiene su propio scroll interno
 
-En móvil:
+En móvil y tablet compacta:
 
 - no roba espacio fijo al visor
 - se abre con el botón `Resumen`
@@ -232,7 +232,7 @@ La app incluye:
 - `manifest.webmanifest`
 - `service-worker.js`
 - iconos locales
-- cache del shell
+- cache del shell y del contenido docente principal
 
 Qué se cachea:
 
@@ -241,6 +241,9 @@ Qué se cachea:
 - `app.js`
 - `data/content.js`
 - `manifest.webmanifest`
+- `assets/portada/cover.png`
+- `assets/imagen/nac/*.png`
+- `assets/texto/nac/*.txt`
 - iconos y placeholders base
 
 ## Cómo abrir la app en local
@@ -248,7 +251,7 @@ Qué se cachea:
 La forma recomendada es usar un servidor local simple:
 
 ```bash
-cd /Users/olsanju/Desktop/neomonia
+cd /ruta/al/proyecto/neomonia
 python3 -m http.server 4173
 ```
 
@@ -257,11 +260,6 @@ Después abre:
 ```text
 http://127.0.0.1:4173
 ```
-
-Nota:
-
-- la carpeta local real del proyecto en esta máquina es `neomonia`
-- el nombre del repositorio publicado es `Neumonia`
 
 No es recomendable usar `file://` para pruebas reales de:
 
