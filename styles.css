@@ -1535,10 +1535,10 @@ details.topic[open] summary {
 
   .panel-rail {
     right: calc(0.3rem + var(--safe-right));
-    top: auto;
-    bottom: calc(0.7rem + var(--safe-bottom));
-    transform: none;
-    gap: 0.35rem;
+    top: 40%;
+    bottom: auto;
+    transform: translateY(-50%);
+    gap: 0.28rem;
   }
 
   .app-shell.is-fullscreen .screen-app,
@@ -1561,9 +1561,10 @@ details.topic[open] summary {
   .app-shell.is-fullscreen .panel-rail,
   .app-shell:fullscreen .panel-rail,
   .app-shell:-webkit-full-screen .panel-rail {
-    top: auto;
+    top: 40%;
     right: calc(0.3rem + var(--safe-right));
-    bottom: calc(0.7rem + var(--safe-bottom));
+    bottom: auto;
+    transform: translateY(-50%);
   }
 
   .app-shell.is-mobile-reading,
@@ -1634,12 +1635,13 @@ details.topic[open] summary {
   }
 
   .rail-button {
-    width: 2.2rem;
-    min-height: 4.3rem;
-    padding: 0.48rem 0.14rem;
-    border-radius: 14px;
-    font-size: 0.56rem;
-    letter-spacing: 0.01em;
+    width: 1.9rem;
+    min-height: 3.7rem;
+    padding: 0.38rem 0.1rem;
+    border-radius: 12px;
+    font-size: 0.48rem;
+    line-height: 0.92;
+    letter-spacing: 0;
   }
 
   .viewer-media-frame {
