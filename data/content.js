@@ -54,6 +54,13 @@ window.NAC_DATA = Object.freeze({
     utdAmb: "Tratamiento de la neumonía adquirida en la comunidad en adultos en el entorno ambulatorio - UpToDate.pdf",
     utdHosp: "Tratamiento de la neumonía adquirida en la comunidad en adultos que requieren hospitalización - UpToDate.pdf"
   }),
+  sessionMedia: Object.freeze({
+    title: "Sesión audiovisual",
+    href: "video.html",
+    description: "Abre la versión HTML independiente de la sesión sin modificar su contenido.",
+    openInAppLabel: "Abrir en la app",
+    openInTabLabel: "Abrir en pestaña nueva"
+  }),
   sessionOutline: Object.freeze([
     "NAC",
     "Concepto y Epidemiología",

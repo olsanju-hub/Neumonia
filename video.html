@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesión NAC - Guillermo J. Olivero Sanjuanelo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Lexend:wght@400;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --bg-dark: #020617;
+            --accent: #38bdf8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .presentation-frame {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide.active { opacity: 1; z-index: 10; }
+
+        .slide-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            position: absolute;
+            inset: 0;
+            filter: saturate(1.2) brightness(0.8);
+        }
+
+        .slide-overlay {
+            position: relative;
+            z-index: 20;
+            padding: 5rem;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(2,6,23,0.95) 0%, rgba(2,6,23,0.4) 50%, rgba(2,6,23,0) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tag {
+            font-family: 'Lexend', sans-serif;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+        }
+
+        .title {
+            font-family: 'Lexend', sans-serif;
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1;
+            max-width: 700px;
+            margin-bottom: 2rem;
+            background: linear-gradient(to bottom right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .author-box {
+            position: absolute;
+            top: 3rem;
+            right: 3rem;
+            text-align: right;
+            z-index: 50;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+        }
+
+        .author-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Subtítulos optimizados: Pequeños, abajo, no obstruyen */
+        .subtitle-container {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .subtitle-text {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1.05rem;
+            max-width: 80%;
+            text-align: center;
+            line-height: 1.4;
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .subtitle-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-controls {
+            position: absolute;
+            bottom: 2.5rem;
+            right: 3rem;
+            z-index: 110;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover { background: var(--primary); transform: scale(1.1); border-color: var(--primary); }
+
+        .progress-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--primary);
+            width: 0%;
+            z-index: 120;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading" class="absolute inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center">
+    <div class="w-16 h-16 border-t-4 border-sky-500 rounded-full animate-spin"></div>
+    <div class="mt-8 text-center">
+        <h2 class="text-white font-bold text-xl tracking-tighter">GENERANDO SESIÓN CLÍNICA</h2>
+        <p class="text-slate-500 text-sm mt-1 uppercase tracking-widest">Dr. Guillermo J. Olivero Sanjuanelo</p>
+    </div>
+</div>
+
+<div class="presentation-frame" id="frame">
+    <div id="slides-container"></div>
+    
+    <div class="author-box">
+        <span class="author-name">Guillermo J. Olivero Sanjuanelo</span><br>
+        Residente 3º año de Medicina Familiar y Comunitaria<br>
+        HCM-CSSE • 2025
+    </div>
+
+    <div class="subtitle-container">
+        <div id="subtitle" class="subtitle-text"></div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="btn" onclick="prev()"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg></button>
+        <button class="btn" onclick="toggle()"><svg id="play-icon" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><svg id="pause-icon" class="hidden" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg></button>
+        <button class="btn" onclick="next()"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg></button>
+    </div>
+
+    <div class="progress-indicator" id="progress"></div>
+</div>
+
+<script>
+    const apiKey = "";
+    
+    // Contenido basado ESTRICTAMENTE en las 16 páginas del PDF "Neumonía Adquirida en la Comunidad (NAC).pdf"
+    const content = [
+        {
+            tag: "Sesión Clínica",
+            title: "Neumonía Adquirida en la Comunidad (NAC)",
+            prompt: "Academic medicine presentation title slide, blue and dark slate theme, minimalist stethoscope and lung outline",
+            speech: "Hola a todos. Soy Guillermo José Olivero Sanjuanelo, R3 de Medicina Familiar. Hoy presento mi sesión clínica sobre Neumonía Adquirida en la Comunidad, centrada en los protocolos vigentes y nuestra práctica diaria en el centro de salud y el hospital."
+        },
+        {
+            tag: "Definición",
+            title: "Concepto y Epidemiología",
+            prompt: "Cinematic close-up of a doctor looking at a chest x-ray, deep shadows, hospital setting",
+            speech: "La NAC es una infección aguda del parénquima pulmonar en pacientes no hospitalizados. Es una enfermedad frecuente y potencialmente grave, con una incidencia de 5 a 11 casos por cada mil habitantes al año, aumentando drásticamente en ancianos."
+        },
+        {
+            tag: "Impacto Clínico",
+            title: "Morbimortalidad y Cifras",
+            prompt: "Modern hospital ward, clinical busy environment, soft blue lighting, professional medical atmosphere",
+            speech: "Hablamos de una patología que requiere ingreso en el 22 al 42% de los casos. La mortalidad global varía, pero en pacientes hospitalizados puede llegar al 30% en las formas más graves. 1 de cada 10 ingresados acabará en cuidados intensivos."
+        },
+        {
+            tag: "Fisiopatología",
+            title: "Patogenia: El Microbioma Pulmonar",
+            prompt: "Medical illustration of lung alveoli, microscopic view of immune response, realistic medical CGI",
+            speech: "Recordemos que el pulmón no es estéril. La neumonía aparece cuando un patógeno supera las defensas, generalmente por microaspiración. Esto genera una inflamación local que, según el caso, puede desencadenar una respuesta sistémica severa."
+        },
+        {
+            tag: "Agentes Causales",
+            title: "Etiología: Microorganismos Clave",
+            prompt: "Microbiology lab, petri dish with Streptococcus pneumoniae colonies, laboratory lighting",
+            speech: "Streptococcus pneumoniae sigue siendo el germen más frecuente. También debemos considerar virus respiratorios, patógenos atípicos como Mycoplasma y Legionella, y en casos específicos, Gram negativos o Staphylococcus aureus."
+        },
+        {
+            tag: "Pistas Clínicas",
+            title: "Factores de Riesgo Etiológico",
+            prompt: "Infographic icons of smoking, dental health, and elderly care, medical clean design",
+            speech: "La etiología se puede intuir por la historia clínica: tabaquismo y EPOC nos orientan a Neumococo o Haemophilus; la mala higiene dental a anaerobios; y la exposición a aire acondicionado o viajes a Legionella."
+        },
+        {
+            tag: "Presentación",
+            title: "Clínica y Diagnóstico",
+            prompt: "Professional doctor auscultating a patient, patient is an older man, focus on the stethoscope contact",
+            speech: "Buscamos la tríada de fiebre, tos y dolor pleurítico. Pero atención al anciano: la confusión o el empeoramiento de patologías crónicas pueden ser el único signo inicial de una NAC grave."
+        },
+        {
+            tag: "Prueba de Oro",
+            title: "Radiografía de Tórax",
+            prompt: "High quality digital chest radiography showing lobar consolidation, clinical screen view",
+            speech: "El diagnóstico de certeza requiere un infiltrado nuevo en la radiografía de tórax. Nos sirve no solo para confirmar, sino para valorar la extensión, el derrame pleural y posibles complicaciones como abscesos o cavitaciones."
+        },
+        {
+            tag: "Herramienta Emergente",
+            title: "Ecografía Torácica",
+            prompt: "Point of care ultrasound being used on chest, modern hospital technology, realistic",
+            speech: "La ecografía tiene mayor sensibilidad que la placa para el diagnóstico inicial. Es una herramienta potente a pie de cama para detectar consolidaciones subpleurales y cuantificar el derrame pleural de forma dinámica."
+        },
+        {
+            tag: "Protocolo Diagnóstico",
+            title: "PCR en Punto de Atención",
+            prompt: "Point-of-care test device for C-reactive protein, clinic desk, blood drop visible",
+            speech: "Siguiendo el protocolo de determinación de Proteína C Reactiva en Atención Primaria: valores por debajo de 20 mg/L hacen la neumonía improbable, mientras que por encima de 100 mg/L la indicación de antibiótico es clara."
+        },
+        {
+            tag: "Estratificación",
+            title: "Escala de Gravedad CURB-65",
+            prompt: "Clean UI graphic showing Confusion, Urea, Respiratory rate, Blood pressure, Age criteria",
+            speech: "El CURB-65 es vital para decidir el sitio de cuidado. Un punto por Confusión, Urea >19, FR >30, Tensión baja o edad >65. Con 0-1 puntos el manejo es ambulatorio; con 3 o más, el ingreso es imperativo."
+        },
+        {
+            tag: "Estratificación II",
+            title: "Índice de Gravedad del PSI",
+            prompt: "Medical tablet showing complex clinical calculator, statistical tables, hospital background",
+            speech: "El PSI o Fine es más complejo pero preciso. Evalúa factores demográficos y comorbilidades. Los estadios I, II y III pueden tratarse en casa; el IV y V siempre requieren hospitalización por su riesgo de muerte."
+        },
+        {
+            tag: "Resistencia",
+            title: "Puntuación PES: Multirresistentes",
+            prompt: "Abstract medical DNA helix and bacteria, red and blue light, antibiotic resistance concept",
+            speech: "La escala PES nos ayuda a sospechar Pseudomonas, Enterobacterias o SARM. Valoramos ingresos previos y uso de antibióticos. Si el PES es ≥ 5, debemos ampliar el espectro empírico inicial."
+        },
+        {
+            tag: "Hospitalización",
+            title: "Criterios de Ingreso en UHD",
+            prompt: "Home care nurse checking a patient in a living room, medical equipment suitcase, professional",
+            speech: "La Unidad de Hospitalización a Domicilio es ideal para pacientes estables que requieren tratamiento parenteral pero tienen soporte social. Es una alternativa segura que reduce las infecciones nosocomiales."
+        },
+        {
+            tag: "Tratamiento I",
+            title: "Manejo Ambulatorio",
+            prompt: "Pharmacy pills and medical prescription on a desk, soft natural lighting",
+            speech: "Para el paciente ambulatorio sano: Amoxicilina 1g cada 8 horas. Si hay comorbilidad, usamos Amoxicilina-Clavulánico. En alérgicos, la opción de elección suele ser una fluoroquinolona respiratoria como el Levofloxacino."
+        },
+        {
+            tag: "Tratamiento II",
+            title: "Manejo Hospitalario en Planta",
+            prompt: "Intravenous drip in a hospital room, sunlight through window, peaceful clinical scene",
+            speech: "En planta usamos betalactámicos asociados a macrólidos para cubrir atípicos, o bien Levofloxacino en monoterapia. El objetivo es estabilizar al paciente y pasar a vía oral lo antes posible, idealmente en las primeras 48-72 horas."
+        },
+        {
+            tag: "Cuidados Críticos",
+            title: "Criterios de Ingreso en UCI",
+            prompt: "ICU monitor displaying vital signs, intensive care unit equipment, blue high-tech lighting",
+            speech: "Aplicamos los criterios SEPAR/IDSA. Un criterio mayor, como necesidad de ventilación mecánica o shock, es indicación directa de UCI. También tres o más criterios menores obligan a vigilancia intensiva."
+        },
+        {
+            tag: "Monitorización",
+            title: "Evolución y Estabilidad Clínica",
+            prompt: "Clinical chart showing improving vitals, stethoscope, medical success concept",
+            speech: "Consideramos estabilidad cuando la temperatura baja de 37.8, la frecuencia cardiaca es menor de 100 y la saturación es superior a 90 con aire ambiente. Cumplir esto permite el alta hospitalaria segura."
+        },
+        {
+            tag: "Prevención",
+            title: "Vacunación Antineumocócica",
+            prompt: "Vaccine vial with needle, focus on preventitive medicine, bright clinical lighting",
+            speech: "Finalmente, la prevención. Debemos asegurar la vacunación antineumocócica, ya sea con la pauta secuencial o la nueva conjugada de 20 valencias, además de la vacunación antigripal anual en todos los grupos de riesgo."
+        },
+        {
+            tag: "Conclusiones",
+            title: "Resumen y Mensajes Clave",
+            prompt: "Medical doctor smiling confidently, hospital lobby, professional portraits, warm light",
+            speech: "Para llevar a casa: Diagnóstico rápido con placa o eco, estratificación obligatoria con escalas de gravedad y tratamiento precoz ajustado al riesgo. Soy Guillermo Olivero y espero que esta sesión les sea de utilidad."
+        }
+    ];
+
+    let current = 0;
+    let isPlaying = false;
+    let synth = window.speechSynthesis;
+    let utt = null;
+
+    async function init() {
+        const container = document.getElementById('slides-container');
+        for (let i = 0; i < content.length; i++) {
+            const data = content[i];
+            const div = document.createElement('div');
+            div.className = `slide ${i === 0 ? 'active' : ''}`;
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        instances: [{ prompt: data.prompt }],
+                        parameters: { sampleCount: 1 }
+                    })
+                });
+                const json = await res.json();
+                const img = `data:image/png;base64,${json.predictions[0].bytesBase64Encoded}`;
+                div.innerHTML = `
+                    <img src="${img}" class="slide-bg">
+                    <div class="slide-overlay">
+                        <div class="tag">${data.tag}</div>
+                        <h1 class="title">${data.title}</h1>
+                    </div>
+                `;
+            } catch (e) {
+                div.innerHTML = `
+                    <div class="slide-overlay">
+                        <div class="tag">${data.tag}</div>
+                        <h1 class="title">${data.title}</h1>
+                    </div>
+                `;
+            }
+            container.appendChild(div);
+        }
+        document.getElementById('loading').style.display = 'none';
+        update();
+    }
+
+    function update() {
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach((s, i) => s.classList.toggle('active', i === current));
+        document.getElementById('progress').style.width = `${((current + 1) / content.length) * 100}%`;
+        
+        const sub = document.getElementById('subtitle');
+        sub.classList.remove('visible');
+        setTimeout(() => {
+            sub.innerText = content[current].speech;
+            sub.classList.add('visible');
+        }, 300);
+    }
+
+    function speak() {
+        synth.cancel();
+        utt = new SpeechSynthesisUtterance(content[current].speech);
+        utt.lang = 'es-ES';
+        utt.rate = 0.9;
+        utt.onend = () => {
+            if (isPlaying && current < content.length - 1) {
+                setTimeout(next, 1500);
+            } else if (current === content.length - 1) {
+                isPlaying = false;
+                toggleIcons();
+            }
+        };
+        synth.speak(utt);
+    }
+
+    function toggle() {
+        isPlaying = !isPlaying;
+        toggleIcons();
+        if (isPlaying) speak();
+        else synth.cancel();
+    }
+
+    function toggleIcons() {
+        document.getElementById('play-icon').classList.toggle('hidden', isPlaying);
+        document.getElementById('pause-icon').classList.toggle('hidden', !isPlaying);
+    }
+
+    function next() {
+        if (current < content.length - 1) {
+            current++;
+            update();
+            if (isPlaying) speak();
+        }
+    }
+
+    function prev() {
+        if (current > 0) {
+            current--;
+            update();
+            if (isPlaying) speak();
+        }
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>

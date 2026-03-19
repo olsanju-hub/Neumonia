@@ -9,11 +9,13 @@
     fullscreenFallback: false,
     standaloneReadingDismissed: false,
     summaryExpanded: false,
+    sessionMediaOpen: false,
     swipeStart: null,
     slides: [],
     slidesReady: false,
     slidesPromise: null,
-    returnFocusEl: null
+    returnFocusEl: null,
+    sessionMediaReturnFocusEl: null
   };
   const DEV_HOSTNAMES = ["localhost", "127.0.0.1"];
 
@@ -64,12 +66,19 @@
     els.summaryModalTitle = document.getElementById("summary-modal-title");
     els.summaryModalBody = document.getElementById("summary-modal-body");
     els.closeSummaryButton = document.getElementById("close-summary-button");
+    els.sessionMediaBackdrop = document.getElementById("session-media-backdrop");
+    els.sessionMediaModal = document.getElementById("session-media-modal");
+    els.sessionMediaTitle = document.getElementById("session-media-title");
+    els.sessionMediaFrame = document.getElementById("session-media-frame");
+    els.sessionMediaLink = document.getElementById("session-media-link");
+    els.closeSessionMediaButton = document.getElementById("close-session-media-button");
     els.sidePanel = document.getElementById("side-panel");
     els.panelKicker = document.getElementById("panel-kicker");
     els.panelTitle = document.getElementById("panel-title");
     els.panelBody = document.getElementById("panel-body");
     els.closePanelButton = document.getElementById("close-panel-button");
-    els.panelButtons = Array.from(document.querySelectorAll(".rail-button"));
+    els.panelButtons = Array.from(document.querySelectorAll(".rail-button[data-panel]"));
+    els.sessionMediaRailButton = document.getElementById("session-media-rail-button");
   }
 
   function hydrateStaticCopy() {
@@ -93,14 +102,29 @@
     if (els.summaryToggleButton) {
       els.summaryToggleButton.addEventListener("click", toggleSummary);
     }
-    els.overlay.addEventListener("click", closePanel);
+    els.overlay.addEventListener("click", () => closePanel());
     if (els.summaryBackdrop) {
-      els.summaryBackdrop.addEventListener("click", closeSummaryModal);
+      els.summaryBackdrop.addEventListener("click", () => closeSummaryModal());
     }
     if (els.closeSummaryButton) {
-      els.closeSummaryButton.addEventListener("click", closeSummaryModal);
+      els.closeSummaryButton.addEventListener("click", () => closeSummaryModal());
     }
-    els.closePanelButton.addEventListener("click", closePanel);
+    if (els.sessionMediaBackdrop) {
+      els.sessionMediaBackdrop.addEventListener("click", () => closeSessionMedia());
+    }
+    if (els.closeSessionMediaButton) {
+      els.closeSessionMediaButton.addEventListener("click", () => closeSessionMedia());
+    }
+    els.closePanelButton.addEventListener("click", () => closePanel());
+    if (els.sessionMediaRailButton) {
+      els.sessionMediaRailButton.addEventListener("click", () => {
+        if (state.sessionMediaOpen) {
+          closeSessionMedia();
+          return;
+        }
+        openSessionMedia(els.sessionMediaRailButton);
+      });
+    }
 
     els.panelButtons.forEach((button) => {
       button.addEventListener("click", () => togglePanel(button.dataset.panel, button));
@@ -147,6 +171,7 @@
   function returnToCover() {
     closePanel();
     closeSummaryModal();
+    closeSessionMedia(true);
     exitAppFullscreen();
     state.entered = false;
     state.standaloneReadingDismissed = false;
@@ -509,7 +534,7 @@
       els.summaryBackdrop.classList.add("is-open");
     });
     els.summaryModal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("panel-open");
+    syncBodyLockState();
     if (els.summaryToggleButton) {
       els.summaryToggleButton.setAttribute("aria-expanded", "true");
       els.summaryToggleButton.textContent = "Cerrar resumen";
@@ -543,9 +568,7 @@
       }
       els.summaryModal.hidden = true;
       els.summaryBackdrop.hidden = true;
-      if (!state.activePanel) {
-        document.body.classList.remove("panel-open");
-      }
+      syncBodyLockState();
       if (!silent && els.summaryToggleButton && !els.summaryToggleButton.hidden) {
         els.summaryToggleButton.focus();
       }
@@ -577,7 +600,7 @@
 
     els.sidePanel.hidden = false;
     els.overlay.hidden = false;
-    document.body.classList.add("panel-open");
+    syncBodyLockState();
     requestAnimationFrame(() => {
       els.sidePanel.classList.add("is-open");
       els.overlay.classList.add("is-open");
@@ -592,7 +615,7 @@
     els.closePanelButton.focus();
   }
 
-  function closePanel() {
+  function closePanel(silent) {
     if (!state.activePanel) {
       return;
     }
@@ -609,13 +632,90 @@
       }
       els.sidePanel.hidden = true;
       els.overlay.hidden = true;
-      if (!state.summaryExpanded) {
-        document.body.classList.remove("panel-open");
-      }
-      if (state.returnFocusEl && typeof state.returnFocusEl.focus === "function") {
+      syncBodyLockState();
+      if (!silent && state.returnFocusEl && state.returnFocusEl.isConnected && typeof state.returnFocusEl.focus === "function") {
         state.returnFocusEl.focus();
       }
+      state.returnFocusEl = null;
     }, 220);
+  }
+
+  function openSessionMedia(trigger) {
+    const href = getSessionMediaHref();
+    if (!href || !els.sessionMediaModal || !els.sessionMediaBackdrop || !els.sessionMediaFrame) {
+      return;
+    }
+
+    closeSummaryModal(true);
+    if (state.activePanel) {
+      closePanel(true);
+    }
+
+    state.sessionMediaOpen = true;
+    state.sessionMediaReturnFocusEl = trigger || els.sessionMediaRailButton || document.activeElement;
+
+    if (els.sessionMediaTitle) {
+      els.sessionMediaTitle.textContent = APP.sessionMedia.title || "Sesión audiovisual";
+    }
+    if (els.sessionMediaLink) {
+      els.sessionMediaLink.href = href;
+    }
+    if (els.sessionMediaFrame.getAttribute("src") !== href) {
+      els.sessionMediaFrame.setAttribute("src", href);
+    }
+
+    els.sessionMediaModal.hidden = false;
+    els.sessionMediaBackdrop.hidden = false;
+    requestAnimationFrame(() => {
+      els.sessionMediaModal.classList.add("is-open");
+      els.sessionMediaBackdrop.classList.add("is-open");
+    });
+    els.sessionMediaModal.setAttribute("aria-hidden", "false");
+    syncBodyLockState();
+    if (els.sessionMediaRailButton) {
+      els.sessionMediaRailButton.classList.add("is-active");
+    }
+
+    if (els.closeSessionMediaButton) {
+      els.closeSessionMediaButton.focus();
+    }
+  }
+
+  function closeSessionMedia(silent) {
+    if (!els.sessionMediaModal || !els.sessionMediaBackdrop) {
+      state.sessionMediaOpen = false;
+      return;
+    }
+
+    state.sessionMediaOpen = false;
+    els.sessionMediaModal.classList.remove("is-open");
+    els.sessionMediaBackdrop.classList.remove("is-open");
+    els.sessionMediaModal.setAttribute("aria-hidden", "true");
+    if (els.sessionMediaRailButton) {
+      els.sessionMediaRailButton.classList.remove("is-active");
+    }
+
+    setTimeout(() => {
+      if (state.sessionMediaOpen) {
+        return;
+      }
+      els.sessionMediaModal.hidden = true;
+      els.sessionMediaBackdrop.hidden = true;
+      if (els.sessionMediaFrame) {
+        els.sessionMediaFrame.setAttribute("src", "about:blank");
+      }
+      syncBodyLockState();
+      if (!silent && state.sessionMediaReturnFocusEl && state.sessionMediaReturnFocusEl.isConnected && typeof state.sessionMediaReturnFocusEl.focus === "function") {
+        state.sessionMediaReturnFocusEl.focus();
+      } else if (!silent && els.sessionMediaRailButton && typeof els.sessionMediaRailButton.focus === "function") {
+        els.sessionMediaRailButton.focus();
+      }
+      state.sessionMediaReturnFocusEl = null;
+    }, 220);
+  }
+
+  function syncBodyLockState() {
+    document.body.classList.toggle("panel-open", Boolean(state.activePanel || state.summaryExpanded || state.sessionMediaOpen));
   }
 
   function handleGlobalKeydown(event) {
@@ -625,6 +725,11 @@
       tag === "SELECT" ||
       tag === "TEXTAREA" ||
       Boolean(document.activeElement && document.activeElement.isContentEditable);
+
+    if (event.key === "Escape" && state.sessionMediaOpen) {
+      closeSessionMedia();
+      return;
+    }
 
     if (event.key === "Escape" && state.activePanel) {
       closePanel();
@@ -729,6 +834,8 @@
         </div>
       </section>
 
+      ${renderSessionMediaBlock()}
+
       <section class="panel-block">
         <h3>Bibliografía integrada</h3>
         <ul class="bibliography-list">
@@ -754,6 +861,25 @@
         `
       )
       .join("");
+  }
+
+  function renderSessionMediaBlock() {
+    const media = APP.sessionMedia;
+    const href = getSessionMediaHref();
+    if (!media || !href) {
+      return "";
+    }
+
+    return `
+      <section class="panel-block">
+        <h3>${escapeHtml(media.title || "Sesión audiovisual")}</h3>
+        <p class="muted-copy">${escapeHtml(media.description || "")}</p>
+        <div class="session-action-row">
+          <button class="button button-primary" id="open-session-media-button" type="button">${escapeHtml(media.openInAppLabel || "Abrir en la app")}</button>
+          <a class="button" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(media.openInTabLabel || "Abrir en pestaña nueva")}</a>
+        </div>
+      </section>
+    `;
   }
 
   function renderScalesPanel() {
@@ -936,6 +1062,7 @@
     if (panelKey === "session") {
       const jumpForm = document.getElementById("jump-form");
       const slideButtons = Array.from(document.querySelectorAll("[data-slide-number]"));
+      const openSessionMediaButton = document.getElementById("open-session-media-button");
 
       if (jumpForm) {
         jumpForm.addEventListener("submit", (event) => {
@@ -971,6 +1098,12 @@
           closePanel();
         });
       });
+
+      if (openSessionMediaButton) {
+        openSessionMediaButton.addEventListener("click", () => {
+          openSessionMedia(openSessionMediaButton);
+        });
+      }
 
       return;
     }
@@ -1464,6 +1597,13 @@
       return "";
     }
     return encodeURI(`docs/${String(label).normalize("NFD")}`);
+  }
+
+  function getSessionMediaHref() {
+    if (!APP.sessionMedia || !APP.sessionMedia.href) {
+      return "";
+    }
+    return encodeURI(String(APP.sessionMedia.href));
   }
 
   function registerServiceWorker() {

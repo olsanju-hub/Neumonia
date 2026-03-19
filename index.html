@@ -47,6 +47,7 @@
           <button class="rail-button" data-panel="tx" type="button">Tx</button>
           <button class="rail-button" data-panel="scales" type="button">Escalas</button>
           <button class="rail-button" data-panel="session" type="button">Sesión</button>
+          <button class="rail-button" id="session-media-rail-button" type="button">Video</button>
         </nav>
 
         <div class="viewer-layout" id="viewer-layout">
@@ -101,6 +102,26 @@
             <button class="icon-button" id="close-summary-button" type="button" aria-label="Cerrar resumen">X</button>
           </header>
           <div class="summary-modal-body" id="summary-modal-body"></div>
+        </div>
+      </aside>
+
+      <div class="media-backdrop" id="session-media-backdrop" hidden></div>
+
+      <aside class="media-modal" id="session-media-modal" hidden aria-hidden="true" aria-labelledby="session-media-title" role="dialog">
+        <div class="media-modal-shell">
+          <header class="media-modal-header">
+            <div>
+              <p class="eyebrow">Versión audiovisual</p>
+              <h2 id="session-media-title">Sesión audiovisual</h2>
+            </div>
+            <div class="media-modal-actions">
+              <a class="subtle-button media-open-link" id="session-media-link" href="video.html" target="_blank" rel="noopener">Abrir fuera</a>
+              <button class="icon-button" id="close-session-media-button" type="button" aria-label="Cerrar versión audiovisual">X</button>
+            </div>
+          </header>
+          <div class="media-modal-body">
+            <iframe id="session-media-frame" class="media-modal-frame" title="Sesión audiovisual NAC" loading="lazy"></iframe>
+          </div>
         </div>
       </aside>
 

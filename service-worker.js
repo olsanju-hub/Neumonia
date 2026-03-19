@@ -1,4 +1,4 @@
-const CACHE_NAME = "nac-shell-v9";
+const CACHE_NAME = "nac-shell-v10";
 const SLIDE_CODES = [
   "001",
   "002",
@@ -21,6 +21,7 @@ const SLIDE_CODES = [
 const SHELL_ASSETS = [
   "./",
   "./index.html",
+  "./video.html",
   "./styles.css",
   "./app.js",
   "./data/content.js",
